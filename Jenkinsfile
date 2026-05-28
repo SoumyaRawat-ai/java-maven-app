@@ -67,6 +67,8 @@ pipeline {
             }
             steps {
                 script {
+                    input message: "select the environment ti deploy to", ok: "Done" parameters: [choice(name: 'ONE', choices: ['dev', 'staging', 'prod'], description: 'Select environment')]
+                    
                     gv.deployApp()
                     echo "Deploying to ${ONE}"
                     echo "Deploying to ${TWO}"
