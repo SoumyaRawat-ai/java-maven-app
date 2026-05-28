@@ -4,30 +4,33 @@ pipeline {
         maven "maven-3.6"
     }
     stages {
+        stage("init")   {
+            steps {
+                script {
+                    gv = load "script.groovy"
+                }
+            }
+        }
+
         stage("build jar") {
             steps {
                 script {
-                    echo "Building the project..."
-                    sh "mvn package"
+                    gv.buildJar()
                 }
             }
         }
         stage("build image") {
             steps {
                 script {
-                    echo "Building the Docker image..."
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub',passwordVariable: 'PASS', usernameVariable: 'USER' )]) {
-                        sh 'docker build -t soumyarawat03/demo-app:jma2.0 .'
-                        sh "echo $PASS | docker login -u $USER --password-stdin"
-                        sh 'docker push soumyarawat03/demo-app:jma2.0'
+                    gv.buildImage()
                     }
                 }
             }
         }
-        stage("deploy to kubernetes") {
+        stage("deploy") {
             steps {
                 script {
-                    echo "Deploying to Kubernetes..."
+                    gv.deployApp()
                 }
             }
         }
