@@ -18,12 +18,12 @@ pipeline {
 
     stages {
 
-        stage('Init'){
-                steps {
-                    script {
-                        gv = load "script.groovy"
-                    }
+        stage('Init') {
+            steps {
+                script {
+                    gv = load "script.groovy"
                 }
+            }
         }
 
         stage('Build') {
@@ -50,7 +50,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                script{
+                script {
                     gv.deployApp()
                 }
             }
