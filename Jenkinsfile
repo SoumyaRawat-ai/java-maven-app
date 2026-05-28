@@ -1,78 +1,33 @@
 pipeline {
-
     agent any
-
-    parameters {
-        choice(
-                name: 'VERSION',
-                choices: ['1.1.0', '1.2.0', '1.3.0'],
-                description: 'Select application version'
-        )
-
-        booleanParam(
-                name: 'executeTests',
-                defaultValue: true,
-                description: 'Execute test stage'
-        )
+    tools {
+        maven "Maven 3.6"
     }
-
     stages {
-
-        stage('Init') {
+        stage("build jar") {
             steps {
                 script {
-                    gv = load "script.groovy"
+                    echo "Building the project..."
+                    sh "mvn package"
                 }
             }
         }
-
-        stage('Build') {
+        stage("build image") {
             steps {
                 script {
-                    gv.buildAPP()
+                    echo "Building the Docker image..."
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub',passwordVariable: 'PASS', usernameVariable: 'USER' )]) {
+                        sh 'docker build -t soumyarawat03/demo-app:jma2.0 .'
+                        sh 'echo $PASS | docker login -u $USER -password-stdin'
+                        sh 'docker push soumyarawat03/demo-app:jma2.0'
+                    }
                 }
             }
         }
-
-        stage('Test') {
-            when {
-                expression {
-                    params.executeTests
-                }
-            }
-
+        stage("deploy to kubernetes") {
             steps {
                 script {
-                    gv.testApp()
-                }
-            }
-        }
-
-        stage('Deploy') {
-            input {
-                message "Select the environment to deploy"
-                ok "Done"
-                parameters {
-                    choice(
-                            name: 'ONE',
-                            choices: ['dev', 'staging', 'prod'],
-                            description: 'Select environment'
-                    )
-                    choice(
-                            name: 'TWO',
-                            choices: ['dev', 'staging', 'prod'],
-                            description: 'Select environment'
-                    )
-                }
-            }
-            steps {
-                script {
-                    input message: "select the environment ti deploy to", ok: "Deploy", 
-                            parameters: [choice(name: 'ONE', choices: ['dev', 'staging', 'prod'], description: 'Select environment')]
-                    gv.deployApp()
-                    echo "Deploying to ${ONE}"
-                    echo "Deploying to ${TWO}"
-
+                    echo "Deploying to Kubernetes..."
                 }
             }
         }
