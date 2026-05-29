@@ -1,37 +1,37 @@
 pipeline {
     agent any
-    tools {
-        maven "Maven 3.x"
-    }
-    stages {
-        stage("init")   {
-            steps {
-                script {
-                    gv = load "script.groovy"
-                }
-            }
-        }
 
-        stage("build jar") {
+    stages {
+
+        stage('Test') {
             steps {
-                script {
-                    gv.buildJar()
-                }
+                echo 'Testing...'
+                // Add your test steps here
             }
         }
-        stage("build image") {
-            steps {
-                script {
-                    gv.buildImage()
-                    }
+        stage('Build') {
+            when {
+                expression {
+                    BRANCH_NAME == 'main'
+                    echo "Branch name is: ${BRANCH_NAME}"
                 }
             }
-        stage("deploy") {
             steps {
-                script {
-                    gv.deployApp()
-                }
+                echo 'Building...'
+                // Add your build steps here
             }
         }
-    }
+        
+        stage('Deploy') {
+             when {
+                expression {
+                    BRANCH_NAME == 'main'
+                }
+            }
+            steps {
+                echo 'Deploying...'
+                // Add your deploy steps here
+            }
+        }
+    } 
 }
